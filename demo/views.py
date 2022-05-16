@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import FormView
 from demo.forms import UserCreationForm
+from django.contrib.auth.views import LoginView
 
 # Create your views here.
 
@@ -15,6 +16,14 @@ def about(request):
 def where(request):
     return render(request, template_name="demo/where.html")
 
+
+class LoginView(LoginView):
+    success_url = "/login/"
+
+    template_name = "registration/login.html"
+
+    def form_invalid(self, form):
+        return super(LoginView, self).form_invalid(form)
 
 class register(FormView):
 
