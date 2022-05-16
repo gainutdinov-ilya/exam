@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Каталог</h1>
+    <h1>Корзина</h1>
     <table>
         <tr>
             <td>Название</td>
             <td>Кол-во</td>
             <td>Цена за ед.</td>
-            <td>Дата добавления</td>
         </tr>
-        {% for item in products %}
+        {% for item in cart %}
             <tr>
                 <td>
-                    <a href="/product/{{ item.pk }}">
-                        {{ item.label }}
+                    <a href="/product/{{ item.product.pk }}">
+                        {{ item.product.label }}
                     </a>
                 </td>
                 <td>
@@ -25,12 +24,9 @@
                         {{ item.price }}
                     </span>
                 </td>
-                <td>
-                    <span>
-                        {{ item.date.day }}.{{ item.date.month }}.{{ item.date.year }}
-                    </span>
-                </td>
             </tr>
+        {% empty %}
+            <p>Корзина пуста</p>
         {% endfor %}
 
     </table>

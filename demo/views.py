@@ -4,6 +4,8 @@ from demo.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
 
 # Create your views here.
+from demo.models import Product
+
 
 def catalog(request):
     return render(request, template_name="demo/catalog.html")
@@ -15,6 +17,11 @@ def about(request):
 
 def where(request):
     return render(request, template_name="demo/where.html")
+
+
+def catalog(request):
+    products = Product.objects.all()
+    return render(request, template_name="demo/catalog.html", context={'products': products})
 
 
 class LoginView(LoginView):
