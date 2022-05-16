@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <form method="POST" , class="form-check">
+        {% csrf_token %}
+        <table>
+            {% for field in form %}
+                <tr>
+                    <td>{{ field.label }}</td>
+                    <td>{{ field }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        {{ field.errors }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <button type="submit">Зарегестрироваться</button>
+    </form>
+{% endblock %}

@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 from exam import settings
-from demo import urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +25,4 @@ urlpatterns = [
 ]
 
 urlpatterns += static(settings.STATIC_URL)
-urlpatterns += static(settings.MEDIA_URL, settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
