@@ -5,3 +5,15 @@
 .errorlist {
     color: red;
 }
+
+table {
+    border: 1px solid black;
+}
+
+table td, table tr {
+    border: 1px solid black;
+}
+
+.no-border {
+    border: none;
+}

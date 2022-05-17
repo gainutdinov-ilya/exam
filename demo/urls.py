@@ -11,6 +11,7 @@ urlpatterns = [
     path("about/", about, name='about'),
     path("where/", where, name='where'),
 
+    path("api/order/cancel/<order_pk>", order_cancel, name='order_cancel'),
     path("api/cart/add/<product_pk>", cart_add, name='cart_add'),
     path("api/cart/del/<product_pk>", cart_del, name='cart_del'),
     path("api/cart/checkout", cart_to_order, name='cart_to_order'),

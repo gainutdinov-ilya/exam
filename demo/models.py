@@ -104,8 +104,13 @@ class Product(models.Model):
         auto_created=True
     )
 
+    description = models.CharField(
+        max_length=512,
+        verbose_name='Описание'
+    )
+
     def __str__(self):
-        return f"{self.label} на складе {self.count} ед."
+        return f"{self.pk} {self.label} на складе {self.count} ед."
 
     def dec(self, count=1):
         self.count -= count
@@ -131,13 +136,8 @@ class CartItem(models.Model):
         verbose_name='Цена на момент покупки'
     )
 
-    description = models.CharField(
-        max_length=512,
-        verbose_name='Описание'
-    )
-
     def __str__(self):
-        return f"{self.product.label} {self.count} ед"
+        return f"{self.pk} {self.product.label} {self.count} ед"
 
     def dec(self, count=1):
         self.count -= count
@@ -210,13 +210,20 @@ class Cart(models.Model):
         return cart
 
     def compare_to_order(self) -> Order:
-
         order = Order(
             user=self.user
         )
         order.save()
-        self.delete()
-        self.save()
+        for item in self.items.all():
+            cart_item = CartItem(
+                product=item.product,
+                price=item.product.price,
+                count=item.count
+            )
+            cart_item.save()
+            item.delete()
+            order.items.add(cart_item)
+
         return order
 
     def add_item(self, product_pk) -> CartItem:

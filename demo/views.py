@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views.generic import FormView
 from demo.forms import UserCreationForm
@@ -53,7 +53,10 @@ def cart_del(request, product_pk):
 
 @login_required
 def cart_to_order(request):
-    cart = Cart.get_by_user(user=request.user).compare_to_order()
+    cart = Cart.get_by_user(user=request.user)
+    cart.compare_to_order()
+    cart.delete()
+    cart = Cart.get_by_user(user=request.user)
     return render(request, template_name="demo/cart.html", context={'cart': cart.items.all()})
 
 @login_required
@@ -65,8 +68,12 @@ def check_password(request):
 
 def orders(request):
     orders_obj = Order.get_by_user(user=request.user)
-    print(orders_obj[0].items)
     return render(request, template_name="demo/orders.html", context={'orders': orders_obj})
+
+
+def order_cancel(request, order_pk):
+    Order.objects.get(pk=order_pk).delete()
+    return HttpResponse()
 
 
 class LoginView(LoginView):

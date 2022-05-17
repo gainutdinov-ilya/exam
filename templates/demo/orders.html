@@ -15,7 +15,10 @@
                     {{ order.orderTime }}
                 </td>
                 <td>
-                    {{ order.status }}
+                    {{ order.get_status_display  }}
+                    {% if order.status == 'new' %}
+                        <button onclick="cancel({{ order.pk }})">Отменить</button>
+                    {% endif %}
                 </td>
                 <td>
                     <table>
@@ -50,4 +53,9 @@
             </tr>
         {% endfor %}
     </table>
+    <script type="text/javascript">
+    async function cancel(id){
+        await fetch('/api/order/cancel/'.concat(id)).then( () => document.location.reload())
+    }
+    </script>
 {% endblock %}
