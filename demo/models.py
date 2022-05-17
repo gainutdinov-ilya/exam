@@ -1,5 +1,6 @@
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import validate_email
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from demo.validators import *
@@ -52,7 +53,7 @@ class User(AbstractUser):
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
 
-    REQUIRED_FIELDS = ['email', 'name', 'surname', 'password']
+    REQUIRED_FIELDS = ['email', 'name', 'surname']
 
     def __str__(self):
         return f"{self.name} {self.surname} {self.patronymic}"
@@ -181,6 +182,14 @@ class Cart(models.Model):
         to=CartItem
     )
 
+    def get_by_user(user):
+        try:
+            cart = Cart.objects.get(user=user)
+        except ObjectDoesNotExist:
+            cart = Cart(user=user)
+            cart.save()
+        return cart
+
     def compare_to_order(self) -> Order:
         order = Order(
             items=self.items,
@@ -190,20 +199,33 @@ class Cart(models.Model):
         order.save()
         return order
 
-    def add_item(self, product_pk):
+    def add_item(self, product_pk) -> CartItem:
         product = Product.objects.get(pk=product_pk)
         try:
-            cart_item = self.items.objects.get(product=product)
-        except Product.DoesNotExists:
+            cart_item = self.items.get()
+        except ObjectDoesNotExist:
             cart_item = None
         if not cart_item:
             cart_item = CartItem(product=product, price=product.price, count=1)
             cart_item.save()
-            self.items.objects.add(cart_item)
+            self.items.add(cart_item)
         else:
             cart_item.inc()
+        return cart_item
 
-    def del_item(self, product_pk):
+    def del_item(self, product_pk) -> CartItem:
         product = Product.objects.get(pk=product_pk)
-        cart_item = self.items.objects.get(product=product)
-        cart_item.remove()
+        try:
+            cart_item = self.items.get()
+        except ObjectDoesNotExist:
+            cart_item = None
+        if not cart_item:
+            cart_item = CartItem(product=product, price=product.price, count=1)
+            cart_item.save()
+            self.items.add(cart_item)
+        else:
+            cart_item.dec()
+        if cart_item.count == 0:
+            cart_item.delete()
+            return None
+        return cart_item
