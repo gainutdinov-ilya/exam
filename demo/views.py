@@ -6,7 +6,7 @@ from demo.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
 
 # Create your views here.
-from demo.models import Product, Cart
+from demo.models import Product, Cart, Order
 
 
 def catalog(request):
@@ -40,32 +40,33 @@ def cart(request):
 @login_required
 def cart_add(request, product_pk):
     cart = Cart.get_by_user(user=request.user)
-    item = cart.add_item(product_pk=product_pk)
-    return JsonResponse({
-        'item': {
-            'label': item.product.label,
-            'count': item.count,
-            'price': item.price
-        }
-    })
+    cart.add_item(product_pk=product_pk)
+    return render(request, template_name="demo/cart.html", context={'cart': cart.items.all()})
 
 
 @login_required
 def cart_del(request, product_pk):
     cart = Cart.get_by_user(user=request.user)
-    item = cart.del_item(product_pk=product_pk)
-    if not item:
-        return JsonResponse({
-            'item': None
-        })
-    else:
-        return JsonResponse({
-            'item': {
-                'label': item.product.label,
-                'count': item.count,
-                'price': item.price
-            }
-        })
+    cart.del_item(product_pk=product_pk)
+    return render(request, template_name="demo/cart.html", context={'cart': cart.items.all()})
+
+
+@login_required
+def cart_to_order(request):
+    cart = Cart.get_by_user(user=request.user).compare_to_order()
+    return render(request, template_name="demo/cart.html", context={'cart': cart.items.all()})
+
+@login_required
+def check_password(request):
+    return JsonResponse({
+        'is_valid': request.user.check_password(request.GET.get("password"))
+    })
+
+
+def orders(request):
+    orders_obj = Order.get_by_user(user=request.user)
+    print(orders_obj[0].items)
+    return render(request, template_name="demo/orders.html", context={'orders': orders_obj})
 
 
 class LoginView(LoginView):

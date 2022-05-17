@@ -169,6 +169,25 @@ class Order(models.Model):
         verbose_name='Время заказа'
     )
 
+    status = models.CharField(
+        verbose_name='Статус',
+        choices=(
+            ('new', 'Новый'),
+            ('work', 'В работе'),
+            ('end', 'Завершён'),
+            ('canceled', 'Отменёт')
+        ),
+        max_length=8,
+        default='new'
+    )
+
+    def get_by_user(user):
+        try:
+            order = Order.objects.all().filter(user=user)
+        except ObjectDoesNotExist:
+            return None
+        return order
+
 
 class Cart(models.Model):
     user = models.ForeignKey(
@@ -191,12 +210,13 @@ class Cart(models.Model):
         return cart
 
     def compare_to_order(self) -> Order:
+
         order = Order(
-            items=self.items,
             user=self.user
         )
-        self.delete()
         order.save()
+        self.delete()
+        self.save()
         return order
 
     def add_item(self, product_pk) -> CartItem:

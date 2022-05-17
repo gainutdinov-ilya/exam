@@ -24,10 +24,39 @@
                         {{ item.price }}
                     </span>
                 </td>
+                <td>
+                    <a href="/api/cart/add/{{ item.product.pk }}">Добавить</a>
+                </td>
+                <td>
+                    <a href="/api/cart/del/{{ item.product.pk }}">Удалить</a>
+                </td>
             </tr>
         {% empty %}
-            <td>Корзина пуста</td>
+            <tr>
+                <td>Корзина пуста</td>
+            </tr>
         {% endfor %}
-
+        {% if cart %}
+            <tr>
+                <td>
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password">
+                    <button onclick="checkout()">Оформить заказ</button>
+                    <script type="text/javascript">
+                        async function checkout() {
+                            let password = document.getElementById("password").value;
+                            const result = await fetch("/api/user/password?password=".concat(password)).then((response) => response.json());
+                            if (result.is_valid) {
+                                fetch("/api/cart/checkout");
+                                alert("Заказ оформлен");
+                                document.location.reload();
+                            }else{
+                                alert("Неверный пароль");
+                            }
+                        }
+                    </script>
+                </td>
+            </tr>
+        {% endif %}
     </table>
 {% endblock %}

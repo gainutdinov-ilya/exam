@@ -3,4 +3,14 @@
     <h1>{{ product.label }}</h1>
     <img src="/files/{{ product.img }}" alt="{{ product.label }}">
     <p>Описание: {{ product.description }}</p>
+    {% if user.is_authenticated %}
+        <div id="actions">
+            <button onclick="add()">Добавить</button>
+        </div>
+        <script type="text/javascript">
+            function add(){
+                fetch('/api/cart/add/{{ product.pk }}').then(() => {alert("Товар добавлен в корзину")})
+            }
+        </script>
+    {% endif %}
 {% endblock %}

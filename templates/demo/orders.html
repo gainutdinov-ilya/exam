@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+    <table>
+        <tr>
+            <td>
+                Дата заказа
+            </td>
+            <td>
+                Статус
+            </td>
+        </tr>
+        {% for order in orders %}
+            <tr>
+                <td>
+                    {{ order.orderTime }}
+                </td>
+                <td>
+                    {{ order.status }}
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>
+                                Название
+                            </td>
+                            <td>
+                                Кол-во
+                            </td>
+                            <td>
+                                Цена за ед.
+                            </td>
+                        </tr>
+
+                        {% for item in order.items.all %}
+                            <tr>
+                                <td>
+                                    {{ item.product.label }}
+                                </td>
+                                <td>
+                                    {{ item.count }}
+                                </td>
+                                <td>
+                                    {{ item.price }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                    </table>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
