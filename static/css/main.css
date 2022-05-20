@@ -6,14 +6,10 @@
     color: red;
 }
 
-table {
-    border: 1px solid black;
+.order-table {
+    border: solid black 1px;
 }
 
-table td, table tr {
-    border: 1px solid black;
-}
-
-.no-border {
-    border: none;
+.order-table td{
+    border: solid black 1px;
 }

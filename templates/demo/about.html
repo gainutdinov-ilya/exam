@@ -1,4 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>О нас</h1>
+    <h2>Новинки</h2>
+        {% for item in products %}
+        <div class="d-flex">
+            <img src="{{ item.img.url }}" alt="{{ item.img }}" class="img-thumbnail" width="200">
+            <div class="p-2">
+                <h3><a href="/product/{{ item.pk }}">{{ item.label }}</a> {{ item.price }} р.</h3>
+                <div>
+                    Год производства: {{ item.year }} / Категория: {{ item.category }} / Остаток: {{ item.count }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}

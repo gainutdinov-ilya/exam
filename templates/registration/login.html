@@ -2,21 +2,20 @@
 
 {% block content %}
     <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
+        {% csrf_token %}
         <table>
             {% for field in form %}
                 <tr>
                     <td>{{ field.label }}</td>
                     <td>{{ field }}</td>
                 </tr>
-                <tr>
-                    <td></td>
-                    <td class="row-form-errors">
-                        {{ field.errors }}
-                    </td>
-                </tr>
             {% endfor %}
         </table>
+        {% if form.errors %}
+            <p class="errorlist">
+                Неверный логин или пароль
+            </p>
+        {% endif %}
         <button type="submit">Войти</button>
     </form>
 {% endblock %}

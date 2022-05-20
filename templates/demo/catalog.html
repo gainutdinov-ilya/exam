@@ -1,40 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Каталог</h1>
-    <table>
-        <tr>
-            <td>Название</td>
-            <td>Кол-во</td>
-            <td>Цена за ед.</td>
-            <td>Дата добавления</td>
-            <td></td>
-            <td></td>
-        </tr>
-        {% for item in products %}
-            <tr>
-                <td>
-                    <a href="/product/{{ item.pk }}">
-                        {{ item.label }}
-                    </a>
-                </td>
-                <td>
-                    <span>
-                        {{ item.count }}
-                    </span>
-                </td>
-                <td>
-                    <span>
-                        {{ item.price }}
-                    </span>
-                </td>
-                <td>
-                    <span>
-                        {{ item.date.day }}.{{ item.date.month }}.{{ item.date.year }}
-                    </span>
-                </td>
-            </tr>
 
+    <p>
+        <div>Фильтр по категориям:</div>
+        {% if not request.GET.category %}
+            Все
+        {% else %}
+            <a href="{% url 'catalog' %}?order_by={{ request.GET.order_by }}">Все</a>
+        {% endif %}
+
+        {% for item in category %}
+            {% if item.pk|stringformat:'s' == request.GET.category %}
+                {{ item.label }}
+            {% else %}
+                <a href="{% url 'catalog' %}?category={{ item.pk }}&order_by={{ request.GET.order_by }}">{{ item.label }}</a>
+            {% endif %}
         {% endfor %}
+    </p>
 
-    </table>
+    <p>
+        <div>Сортировка:</div>
+        {% if not request.GET.order_by %}
+            Сбросить
+        {% else %}
+            <a href="{% url 'catalog' %}?category={{ request.GET.category }}">Сбросить</a>
+        {% endif %}
+
+        <a href="{% url 'catalog' %}?order_by=label&category={{ request.GET.category }}">Наименование</a>
+        <a href="{% url 'catalog' %}?order_by=pk&category={{ request.GET.category }}">Год производства</a>
+        <a href="{% url 'catalog' %}?order_by=price&category={{ request.GET.category }}">Цена</a>
+    </p>
+
+    {% for item in products %}
+        <div class="d-flex">
+            <img src="{{ item.img.url }}" alt="{{ item.img }}" class="img-thumbnail" width="200">
+            <div class="p-2">
+                <h3><a href="/product/{{ item.pk }}">{{ item.label }}</a> {{ item.price }} р.</h3>
+                <div>
+                    Год производства: {{ item.year }} / Категория: {{ item.category }} / Остаток: {{ item.count }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
 {% endblock %}

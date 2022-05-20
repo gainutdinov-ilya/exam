@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <table>
+    <table  class="order-table">
         <tr>
             <td>
                 Дата заказа
@@ -12,16 +12,18 @@
         {% for order in orders %}
             <tr>
                 <td>
-                    {{ order.orderTime }}
+                    {{ order.orderTime.timetuple.tm_mday }}.{{ order.orderTime.timetuple.tm_mon }}.{{ order.orderTime.timetuple.tm_year}}  {{ order.orderTime.timetuple.tm_hour }}:{{ order.orderTime.timetuple.tm_min }}
                 </td>
                 <td>
                     {{ order.get_status_display  }}
                     {% if order.status == 'new' %}
                         <button onclick="cancel({{ order.pk }})">Отменить</button>
+                        {% elif order.status == 'canceled' %}
+                        <div>Причина: {{ order.rejection_reason }}</div>
                     {% endif %}
                 </td>
                 <td>
-                    <table>
+                    <table style="border: none">
                         <tr>
                             <td>
                                 Название
@@ -34,10 +36,10 @@
                             </td>
                         </tr>
 
-                        {% for item in order.items.all %}
+                        {% for item in order.orderitem_set.all %}
                             <tr>
                                 <td>
-                                    {{ item.product.label }}
+                                    {{ item.product}}
                                 </td>
                                 <td>
                                     {{ item.count }}

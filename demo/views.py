@@ -1,3 +1,6 @@
+from inspect import getmembers
+from pprint import pprint
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
@@ -6,15 +9,11 @@ from demo.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
 
 # Create your views here.
-from demo.models import Product, Cart, Order
-
-
-def catalog(request):
-    return render(request, template_name="demo/catalog.html")
+from demo.models import Product, Cart, Order, Category
 
 
 def about(request):
-    return render(request, template_name="demo/about.html")
+    return render(request, template_name="demo/about.html", context={'products': Product.objects.all()[:5]})
 
 
 def where(request):
@@ -27,14 +26,24 @@ def product(request, product_pk):
 
 
 def catalog(request):
-    products = Product.objects.all()
-    return render(request, template_name="demo/catalog.html", context={'products': products})
+    category = request.GET.get('category')
 
+    if category:
+        products = Product.objects.filter(count__gte=1, category=category)
+    else:
+        products = Product.objects.filter(count__gte=1)
+    order_by = request.GET.get('order_by')
+    if order_by:
+        products = products.order_by(order_by)
+    else:
+        products = products.order_by('-date')
+
+    return render(request, 'demo/catalog.html', context={'category': Category.objects.all(), 'products': products})
 
 @login_required
 def cart(request):
     cart_items = Cart.get_by_user(user=request.user).items.all()
-    return render(request, template_name="demo/cart.html", context={'cart': cart_items})
+    return render(request, template_name="demo/cart.html", context={'category':Category.objects.all() ,'cart': cart_items})
 
 
 @login_required
@@ -56,8 +65,7 @@ def cart_to_order(request):
     cart = Cart.get_by_user(user=request.user)
     cart.compare_to_order()
     cart.delete()
-    cart = Cart.get_by_user(user=request.user)
-    return render(request, template_name="demo/cart.html", context={'cart': cart.items.all()})
+
 
 @login_required
 def check_password(request):
@@ -74,15 +82,6 @@ def orders(request):
 def order_cancel(request, order_pk):
     Order.objects.get(pk=order_pk).delete()
     return HttpResponse()
-
-
-class LoginView(LoginView):
-    success_url = "/login/"
-
-    template_name = "registration/login.html"
-
-    def form_invalid(self, form):
-        return super(LoginView, self).form_invalid(form)
 
 
 class register(FormView):

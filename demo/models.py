@@ -121,10 +121,71 @@ class Product(models.Model):
         self.save()
 
 
-class CartItem(models.Model):
+class Order(models.Model):
+    user = models.ForeignKey(
+        verbose_name='Пользователь',
+        to=User,
+        on_delete=models.CASCADE
+    )
+
+    items = models.ManyToManyField(
+        verbose_name='Товары',
+        to=Product,
+        through='OrderItem',
+        through_fields=('order', 'product'),
+        related_name='items'
+    )
+
+    orderTime = models.DateTimeField(
+        auto_now=True,
+        auto_created=True,
+        verbose_name='Время заказа'
+    )
+
+    rejection_reason = models.CharField(
+        verbose_name='Причина отмены',
+        max_length=512,
+        blank=True
+    )
+
+    status = models.CharField(
+        verbose_name='Статус',
+        choices=(
+            ('new', 'Новый'),
+            ('end', 'Завершён'),
+            ('canceled', 'Отменён')
+        ),
+        max_length=8,
+        default='new'
+    )
+
+    def get_count(self):
+        count = 0
+        for item in self.orderitem_set.all():
+            count += item.count
+        return count
+
+    def __str__(self):
+        return f"{self.user.name} {self.user.surname} | Товаров в заказе: {self.get_count()} | Статус: {self.get_status_display()}"
+
+    def get_by_user(user):
+        try:
+            order = Order.objects.all().filter(user=user)
+        except ObjectDoesNotExist:
+            return None
+        return order
+
+
+class OrderItem(models.Model):
     product = models.ForeignKey(
         to=Product,
         verbose_name='Товар',
+        on_delete=models.CASCADE
+    )
+
+    order = models.ForeignKey(
+        verbose_name='Заказ',
+        to=Order,
         on_delete=models.CASCADE
     )
 
@@ -134,6 +195,18 @@ class CartItem(models.Model):
 
     price = models.FloatField(
         verbose_name='Цена на момент покупки'
+    )
+
+
+class CartItem(models.Model):
+    product = models.ForeignKey(
+        to=Product,
+        verbose_name='Товар',
+        on_delete=models.CASCADE
+    )
+
+    count = models.IntegerField(
+        verbose_name='Единиц товара'
     )
 
     def __str__(self):
@@ -149,44 +222,6 @@ class CartItem(models.Model):
 
     def get_by_user(self, user):
         return self.objects.all().filter(user=user)
-
-
-class Order(models.Model):
-    user = models.ForeignKey(
-        verbose_name='Пользователь',
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    items = models.ManyToManyField(
-        verbose_name='Товары',
-        to=CartItem
-    )
-
-    orderTime = models.DateTimeField(
-        auto_now=True,
-        auto_created=True,
-        verbose_name='Время заказа'
-    )
-
-    status = models.CharField(
-        verbose_name='Статус',
-        choices=(
-            ('new', 'Новый'),
-            ('work', 'В работе'),
-            ('end', 'Завершён'),
-            ('canceled', 'Отменёт')
-        ),
-        max_length=8,
-        default='new'
-    )
-
-    def get_by_user(user):
-        try:
-            order = Order.objects.all().filter(user=user)
-        except ObjectDoesNotExist:
-            return None
-        return order
 
 
 class Cart(models.Model):
@@ -215,25 +250,26 @@ class Cart(models.Model):
         )
         order.save()
         for item in self.items.all():
-            cart_item = CartItem(
+            order_item = OrderItem(
                 product=item.product,
                 price=item.product.price,
-                count=item.count
+                count=item.count,
+                order=order
             )
-            cart_item.save()
+            order_item.save()
             item.delete()
-            order.items.add(cart_item)
+            order.orderitem_set.add(order_item)
 
         return order
 
     def add_item(self, product_pk) -> CartItem:
         product = Product.objects.get(pk=product_pk)
         try:
-            cart_item = self.items.get()
+            cart_item = self.items.get(product=product)
         except ObjectDoesNotExist:
             cart_item = None
         if not cart_item:
-            cart_item = CartItem(product=product, price=product.price, count=1)
+            cart_item = CartItem(product=product, count=1)
             cart_item.save()
             self.items.add(cart_item)
         else:
@@ -243,11 +279,11 @@ class Cart(models.Model):
     def del_item(self, product_pk) -> CartItem:
         product = Product.objects.get(pk=product_pk)
         try:
-            cart_item = self.items.get()
+            cart_item = self.items.get(product=product)
         except ObjectDoesNotExist:
             cart_item = None
         if not cart_item:
-            cart_item = CartItem(product=product, price=product.price, count=1)
+            cart_item = CartItem(product=product, count=1)
             cart_item.save()
             self.items.add(cart_item)
         else:

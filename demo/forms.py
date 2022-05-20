@@ -58,3 +58,13 @@ class UserCreationForm(UserCreationForm):
             'patronymic',
             'checkbox'
         ]
+
+
+class OrderForm(forms.ModelForm):
+    def clean(self):
+        status = self.cleaned_data.get('status')
+        rejection_reason = self.cleaned_data.get('rejection_reason')
+        if self.instance.status != 'new':
+            raise ValidationError({'status': 'Статус можно изменить только у новых заказов'})
+        if status == 'canceled' and not rejection_reason:
+            raise ValidationError({'rejection_reason': 'При отказе нужно указать причину'})
